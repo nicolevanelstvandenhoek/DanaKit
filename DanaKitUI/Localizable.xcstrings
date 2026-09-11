@@ -2674,7 +2674,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Er is een herinnering voor bloedglucosecontrole ingesteld in uw pomp en deze wordt geactiveerd. Verwijder deze a.u.b. of geef uw glucosespiegel door aan de pomp"
+            "value" : "Er is een herinnering voor bloedglucosecontrole ingesteld in je pomp en deze wordt geactiveerd. Verwijder deze of geef je glucosespiegel door aan de pomp"
           }
         },
         "pl" : {
@@ -10286,7 +10286,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tijdens het koppelproces zal uw DanaRS v1 een koppelprompt tonen en uw iPhone een vraag om een koppelcode. Selecteer OK op je pomp en typ de code in op je iPhone. Daarna is Loop klaar om te communiceren met je DanaRS v1."
+            "value" : "Tijdens het koppelproces zal je DanaRS v1 een koppelprompt tonen en je iPhone een vraag om een koppelcode. Selecteer OK op je pomp en typ de code in op je iPhone. Daarna is Loop klaar om te communiceren met je DanaRS v1."
           }
         },
         "pl" : {
@@ -10772,7 +10772,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tijdens het koppelingsproces zal uw DanaRS v3 een koppelingsprompt tonen en uw iPhone zal een prompt tonen voor twee koppelingscodes. Selecteer OK op je pomp en typ de twee codes op je iPhone. Daarna is Loop klaar om te communiceren met je DanaRS v3."
+            "value" : "Tijdens het koppelingsproces zal je DanaRS v3 een koppelingsprompt tonen en je iPhone zal een prompt tonen voor twee koppelingscodes. Selecteer OK op je pomp en typ de twee codes op je iPhone. Daarna is Loop klaar om te communiceren met je DanaRS v3."
           }
         },
         "pl" : {
@@ -17892,7 +17892,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opmerking: Uw Dana-pomp heeft een speciale instelling waarmee u de pieptonen van uw Dana-pomp kunt uitschakelen. Neem contact op met uw Dana-distributeur om dit in te schakelen."
+            "value" : "Opmerking: Je Dana-pomp heeft een speciale instelling waarmee je de pieptonen van je Dana-pomp kunt uitschakelen. Neem contact op met je Dana-distributeur om dit in te schakelen."
           }
         },
         "pl" : {
@@ -37310,7 +37310,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uw dagelijkse basaallimiet is bereikt. Neem contact op met uw Dana-distributeur om de limiet te verhogen."
+            "value" : "Je dagelijkse basaallimiet is bereikt. Neem contact op met je Dana-distributeur om de limiet te verhogen."
           }
         },
         "pl" : {
@@ -37472,7 +37472,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uw dagelijkse insulinenlimiet is bereikt. Neem contact op met uw Dana-distributeur om de limiet te verhogen."
+            "value" : "Je dagelijkse insulinenlimiet is bereikt. Neem contact op met je Dana-distributeur om de limiet te verhogen."
           }
         },
         "pl" : {
@@ -37632,7 +37632,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uw insulineafgifte wordt pas automatisch aangepast zodra de tijdelijke basale dosis is afgelopen of is geannuleerd."
+            "value" : "Je insulineafgifte wordt pas automatisch aangepast zodra de tijdelijke basale dosis is afgelopen of is geannuleerd."
           }
         },
         "pl" : {
