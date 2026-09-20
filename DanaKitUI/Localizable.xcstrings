@@ -14660,7 +14660,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Insuline Opgeschort"
+            "value" : "Insuline opgeschort"
           }
         },
         "pl" : {
@@ -24372,7 +24372,7 @@
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gepland Basaal"
+            "value" : "Gepland basaal"
           }
         },
         "pl" : {
