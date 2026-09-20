@@ -634,7 +634,7 @@ struct DanaKitSettingsView: View {
     }
 
     var continuousConnectionStatusIcon: some View {
-        let color = viewModel.isTogglingConnection ? Color.orange : viewModel.isConnected ? Color.green : Color.red
+        let color = viewModel.isTogglingConnection ? Color.orange : viewModel.isConnected ? Color.green : Color.pink
 
         return Circle()
             .fill(color)

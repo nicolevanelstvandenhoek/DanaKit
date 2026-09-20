@@ -58,7 +58,7 @@ struct DanaKitRefillReservoirAndCannulaView: View {
                             ),
                             systemImage: "exclamationmark.circle.fill"
                         )
-                        .foregroundStyle(.red)
+                        .foregroundStyle(.pink)
                         .transition(.move(edge: .top))
                     }
 
@@ -102,7 +102,7 @@ struct DanaKitRefillReservoirAndCannulaView: View {
                             ),
                             systemImage: "exclamationmark.circle.fill"
                         )
-                        .foregroundStyle(.red)
+                        .foregroundStyle(.pink)
                         .transition(.move(edge: .top))
                     }
 
@@ -155,7 +155,7 @@ struct DanaKitRefillReservoirAndCannulaView: View {
                             ),
                             systemImage: "exclamationmark.circle.fill"
                         )
-                        .foregroundStyle(.red)
+                        .foregroundStyle(.pink)
                         .transition(.move(edge: .top))
                     }
 
