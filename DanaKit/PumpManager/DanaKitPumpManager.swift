@@ -1,5 +1,6 @@
 import CoreBluetooth
 import HealthKit
+import LoopAlgorithm
 import LoopKit
 import UIKit
 import UserNotifications
@@ -18,11 +19,20 @@ public class DanaKitPumpManager: DeviceManager, @unchecked Sendable {
         state.rawValue
     }
 
-    public static let pluginIdentifier: String = "Dana" // use a single token to make parsing log files easier
+    public let pluginIdentifier: String = "Dana" // use a single token to make parsing log files easier
     public let managerIdentifier: String = "Dana"
 
     public var localizedTitle: String {
         state.getFriendlyDeviceName()
+    }
+
+    public var inSignalLoss: Bool {
+        (bluetooth is ContinousBluetoothManager && !bluetooth.isConnected) ||
+            (bluetooth is InteractiveBluetoothManager && Date.now.timeIntervalSince(state.lastStatusDate) > .minutes(12))
+    }
+
+    public var isInoperable: Bool {
+        false
     }
 
     init(state: DanaKitPumpManagerState, dateGenerator _: @escaping () -> Date = Date.init) {
@@ -188,15 +198,16 @@ public class DanaKitPumpManager: DeviceManager, @unchecked Sendable {
     }
 
     func setAlert(notification: DanaKitNotification) {
-        pumpDelegate.notify {
-            $0?.issueAlert(notification.alert)
+        Task {
+            await pumpDelegate.delegate?.issueAlert(notification.alert)
         }
     }
 
     func clearAlerts() {
-        pumpDelegate.notify {
-            $0?.retractAlert(identifier: DanaKitNotification.disconnectWarning.identifier)
-            $0?.retractAlert(identifier: DanaKitNotification.disconnectedReminder(after: .minutes(1)).identifier)
+        Task {
+            for identifier in DanaKitNotification.retractableIdentifiers {
+                await pumpDelegate.delegate?.retractAlert(identifier: identifier)
+            }
         }
     }
 }
@@ -347,6 +358,7 @@ extension DanaKitPumpManager: PumpManager {
     }
 
     public func enactBolus(
+        decisionId: UUID?,
         units: Double,
         activationType: BolusActivationType,
         completion: @escaping (PumpManagerError?) -> Void
@@ -408,7 +420,8 @@ extension DanaKitPumpManager: PumpManager {
                             units: units,
                             duration: duration,
                             activationType: activationType,
-                            insulinType: self.state.insulinType
+                            insulinType: self.state.insulinType,
+                            decisionId: decisionId
                         )
 
                         self.doseReporter = DanaKitDoseProgressReporter(total: units)
@@ -470,7 +483,7 @@ extension DanaKitPumpManager: PumpManager {
 
     public func enactPrime(unit: Double, completion: @escaping (PumpManagerError?) -> Void) {
         isPriming = true
-        enactBolus(units: unit, activationType: .manualNoRecommendation) { error in
+        enactBolus(decisionId: nil, units: unit, activationType: .manualNoRecommendation) { error in
             self.isPriming = false
 
             if let error = error {
@@ -598,10 +611,11 @@ extension DanaKitPumpManager: PumpManager {
             type: .delegate
         )
 
-        _enactTempBasal(percentage: percentage, for: duration, automatic: automatic, completion: completion)
+        _enactTempBasal(decisionId: nil, percentage: percentage, for: duration, automatic: automatic, completion: completion)
     }
 
     public func enactTempBasal(
+        decisionId: UUID?,
         unitsPerHour: Double,
         for duration: TimeInterval,
         completion: @escaping (PumpManagerError?) -> Void
@@ -628,7 +642,7 @@ extension DanaKitPumpManager: PumpManager {
             return
         }
 
-        _enactTempBasal(percentage: percentage, for: duration, automatic: true, completion: completion)
+        _enactTempBasal(decisionId: decisionId, percentage: percentage, for: duration, automatic: true, completion: completion)
     }
 
     /// NOTE: There are 2 ways to set a temp basal:
@@ -637,6 +651,7 @@ extension DanaKitPumpManager: PumpManager {
     /// Currently, this is implemented with a simpel U/hr -> % calculator
     /// NOTE: A temp basal >200% for 30 min (or full hour) is rescheduled to 15min
     private func _enactTempBasal(
+        decisionId: UUID?,
         percentage: UInt16,
         for duration: TimeInterval,
         automatic: Bool,
@@ -739,6 +754,7 @@ extension DanaKitPumpManager: PumpManager {
                             self.disconnect()
 
                             self.reportBasal(
+                                decisionId: decisionId,
                                 unitsPerHour: unitsPerHour,
                                 duration: duration,
                                 percentage: percentage,
@@ -771,6 +787,7 @@ extension DanaKitPumpManager: PumpManager {
                             }
 
                             self.reportBasal(
+                                decisionId: decisionId,
                                 unitsPerHour: unitsPerHour,
                                 duration: duration,
                                 percentage: percentage,
@@ -803,6 +820,7 @@ extension DanaKitPumpManager: PumpManager {
                             }
 
                             self.reportBasal(
+                                decisionId: decisionId,
                                 unitsPerHour: unitsPerHour,
                                 duration: duration,
                                 percentage: percentage,
@@ -840,6 +858,7 @@ extension DanaKitPumpManager: PumpManager {
                             }
 
                             self.reportBasal(
+                                decisionId: decisionId,
                                 unitsPerHour: unitsPerHour,
                                 duration: duration,
                                 percentage: percentage,
@@ -868,7 +887,14 @@ extension DanaKitPumpManager: PumpManager {
         }
     }
 
-    private func reportBasal(unitsPerHour: Double, duration: Double, percentage _: UInt16, isTempBasal: Bool, automatic: Bool) {
+    private func reportBasal(
+        decisionId: UUID?,
+        unitsPerHour: Double,
+        duration: Double,
+        percentage _: UInt16,
+        isTempBasal: Bool,
+        automatic: Bool
+    ) {
         var events: [NewPumpEvent] = []
         var basalDose: UnfinalizedDose
 
@@ -879,7 +905,8 @@ extension DanaKitPumpManager: PumpManager {
                 duration: duration,
                 insulinType: state.insulinType,
                 automatic: automatic,
-                startDate: startDate
+                startDate: startDate,
+                decisionId: decisionId
             )
             events.append(NewPumpEvent.tempBasal(
                 dose: basalDose.toDoseEntry(endDate: nil),
@@ -1252,12 +1279,12 @@ extension DanaKitPumpManager: PumpManager {
                         self.logDeviceCommunication("Delivery settings received!", type: .delegateResponse)
 
                         completion(.success(DeliveryLimits(
-                            maximumBasalRate: HKQuantity(
-                                unit: HKUnit.internationalUnit().unitDivided(by: .hour()),
+                            maximumBasalRate: LoopQuantity(
+                                unit: .internationalUnitsPerHour,
                                 doubleValue: basalData.maxBasal
                             ),
-                            maximumBolus: HKQuantity(
-                                unit: .internationalUnit(),
+                            maximumBolus: LoopQuantity(
+                                unit: .internationalUnit,
                                 doubleValue: bolusData.maxBolus
                             )
                         )))
@@ -1390,9 +1417,7 @@ extension DanaKitPumpManager: AlertSoundVendor {
 }
 
 public extension DanaKitPumpManager {
-    func acknowledgeAlert(alertIdentifier _: LoopKit.Alert.AlertIdentifier, completion: @escaping (Error?) -> Void) {
-        completion(nil)
-    }
+    func acknowledgeAlert(alertIdentifier _: LoopKit.Alert.AlertIdentifier) async throws {}
 }
 
 // MARK: State observers
@@ -1487,7 +1512,9 @@ public extension DanaKitPumpManager {
                 return
             }
 
-            delegate.issueAlert(loopAlert)
+            Task {
+                await delegate.issueAlert(loopAlert)
+            }
             delegate.pumpManager(
                 self,
                 hasNewPumpEvents: events,
